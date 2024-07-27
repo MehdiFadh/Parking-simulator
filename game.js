@@ -1,12 +1,14 @@
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
+const menu = document.getElementById('menu');
+const info = document.getElementById('info');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const car = {
-    x: canvas.width / 2,
-    y: canvas.height - 150,
+let car = {
+    x: 0,
+    y: 0,
     width: 50,
     height: 100,
     speed: 5,
@@ -14,18 +16,35 @@ const car = {
     color: 'blue'
 };
 
-const parkingSpot = {
-    x: canvas.width / 2 - 25,
-    y: 50,
-    width: 60,
-    height: 120,
-    color: 'green'
-};
-
-const obstacles = [
-    { x: canvas.width / 2 - 100, y: 200, width: 200, height: 20, color: 'red' },
-    { x: canvas.width / 2 - 150, y: 400, width: 100, height: 20, color: 'red' },
+const levels = [
+    {
+        parkingSpot: { x: canvas.width / 2 - 25, y: 50, width: 60, height: 120, color: 'green' },
+        obstacles: [
+            { x: canvas.width / 2 - 100, y: 200, width: 200, height: 20, color: 'red' },
+            { x: canvas.width / 2 - 150, y: 400, width: 100, height: 20, color: 'red' },
+        ],
+        carStart: { x: canvas.width / 2 - 25, y: canvas.height - 150, angle: 0 }
+    },
+    {
+        parkingSpot: { x: canvas.width / 2 - 25, y: 50, width: 60, height: 120, color: 'green' },
+        obstacles: [
+            { x: canvas.width / 2 - 150, y: 200, width: 300, height: 20, color: 'red' },
+            { x: canvas.width / 2 - 50, y: 300, width: 100, height: 20, color: 'red' },
+        ],
+        carStart: { x: canvas.width / 2 - 25, y: canvas.height - 150, angle: 0 }
+    },
+    {
+        parkingSpot: { x: canvas.width / 2 - 25, y: 50, width: 60, height: 120, color: 'green' },
+        obstacles: [
+            { x: canvas.width / 2 - 200, y: 100, width: 400, height: 20, color: 'red' },
+            { x: canvas.width / 2 - 50, y: 300, width: 100, height: 20, color: 'red' },
+            { x: canvas.width / 2 - 150, y: 400, width: 200, height: 20, color: 'red' },
+        ],
+        carStart: { x: canvas.width / 2 - 25, y: canvas.height - 150, angle: 0 }
+    },
 ];
+
+let currentLevel = 0;
 
 function drawRect(x, y, width, height, color) {
     context.fillStyle = color;
@@ -60,16 +79,16 @@ function checkCollision(rect1, rect2) {
 
 function update() {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    drawParkingSpot(parkingSpot);
-    drawObstacles(obstacles);
+    drawParkingSpot(levels[currentLevel].parkingSpot);
+    drawObstacles(levels[currentLevel].obstacles);
     drawCar(car);
-    
-    if (checkCollision(car, parkingSpot)) {
+
+    if (checkCollision(car, levels[currentLevel].parkingSpot)) {
         alert('Parked Successfully!');
         resetGame();
     }
-    
-    for (let obstacle of obstacles) {
+
+    for (let obstacle of levels[currentLevel].obstacles) {
         if (checkCollision(car, obstacle)) {
             alert('Crashed!');
             resetGame();
@@ -78,9 +97,9 @@ function update() {
 }
 
 function resetGame() {
-    car.x = canvas.width / 2;
-    car.y = canvas.height - 150;
-    car.angle = 0;
+    car.x = levels[currentLevel].carStart.x;
+    car.y = levels[currentLevel].carStart.y;
+    car.angle = levels[currentLevel].carStart.angle;
 }
 
 function gameLoop() {
@@ -107,6 +126,13 @@ function handleKeydown(e) {
     }
 }
 
-window.addEventListener('keydown', handleKeydown);
+function startGame(level) {
+    currentLevel = level - 1;
+    menu.style.display = 'none';
+    canvas.style.display = 'block';
+    info.style.display = 'block';
+    resetGame();
+    gameLoop();
+}
 
-gameLoop();
+window.addEventListener('keydown', handleKeydown);
